@@ -34,6 +34,12 @@ public class DdzGameTestServiceImpl implements DdzTestService {
         static final String ASLORDS = "asLords";//叫地主过程
         static final String FIRSTCALLER = "firstCaller";//第一个叫地主或叫分的玩家
         static final String TIME = "time";//机器人思考时间
+        static final String BOMBMULTIPLE = "bomb_multiple";
+        static final String BETTERSEAT = "better_seat";
+        static final String CARDTIDINESS = "card_tidiness";
+        static final String CALLLORDFIRST = "call_lord_first";
+        static final String BASEGOOD = "base_good";
+        static final String PLAYERBOMB = "playerBomb";
 
     }
 
@@ -69,26 +75,24 @@ public class DdzGameTestServiceImpl implements DdzTestService {
         testDoAction(reqList);
     }
 
-    public void testDoAction(List<JSONObject> reqlist) {
+    @Override
+    public List testByLevelhaveReturn(String level) {
+        List<JSONObject> reqlist = ddzTestMapper.selectReqListByLevel(level);
+        List<String> returnList = testDoAction(reqlist);
+        return returnList;
+    }
+
+
+    public List testDoAction(List<JSONObject> reqlist) {
         Map<String, Object> resultMap = new HashMap<>();
-        JSONObject req = new JSONObject();
-        int seatNo = 0;
-        int lordNo = 0;
-        int levelTmp = 3;//机器人等级
-        int time = 5000;
+        List<String> returnList = new ArrayList<>();
         String playUrl = "";
         String urlName = "";
         String result = "";
-        String firstCaller = "";
         String caseId = "";//用例ID
-        List<List<Integer>> allHands = new ArrayList<>();
-        List<Integer> poolCards = new ArrayList<>();
-        List<List<Integer>> history = new ArrayList<>();
-        List<Integer> scores = new ArrayList<>();
-        List<Integer> asLords = new ArrayList<>();
-        List<Integer> doubles = new ArrayList<>();
-
         for (JSONObject reqJson : reqlist) {
+            JSONObject req = new JSONObject();
+            resultMap = new HashMap<>();
             try {
                 //请求接口名称
                 if (reqJson.get("urlName") != null) {
@@ -101,7 +105,10 @@ public class DdzGameTestServiceImpl implements DdzTestService {
                 //预期返回结果
                 if (reqJson.getString(KeySet.RESULT) != null) {
                     result = reqJson.getString(KeySet.RESULT);
+                }else{
+                    result = "";
                 }
+
                 //请求URL
                 if (reqJson.getString(KeySet.URL) != null) {
                     playUrl = reqJson.getString(KeySet.URL);
@@ -110,57 +117,90 @@ public class DdzGameTestServiceImpl implements DdzTestService {
                 JSONObject castJson = JSONObject.parseObject(reqJson.getString("case"));
 
                 if (castJson.containsKey(KeySet.SEATNO)) {
-                    seatNo = castJson.getInteger(KeySet.SEATNO);
+                    int seatNo = castJson.getInteger(KeySet.SEATNO);
                     req.put(KeySet.SEATNO, seatNo);
                 }
                 if (castJson.containsKey(KeySet.LEVEL)) {
-                    levelTmp = castJson.getInteger(KeySet.LEVEL);
+                    int levelTmp = castJson.getInteger(KeySet.LEVEL);
                     req.put(KeySet.LEVEL, levelTmp);
                 }
                 if (castJson.containsKey(KeySet.TIME)) {
-                    time = castJson.getInteger(KeySet.LEVEL);
+                    int time = castJson.getInteger(KeySet.LEVEL);
                     req.put(KeySet.LEVEL, time);
                 }
                 if (castJson.containsKey(KeySet.ALLHANDS)) {
+                    List<List<Integer>> allHands = new ArrayList<>();
                     allHands = (List<List<Integer>>) castJson.get(KeySet.ALLHANDS);
                     req.put(KeySet.ALLHANDS, allHands);
                 }
 
                 if (castJson.containsKey(KeySet.POOLCARDS)) {
+                    List<Integer> poolCards = new ArrayList<>();
                     poolCards = (List<Integer>) castJson.get(KeySet.POOLCARDS);
                     req.put(KeySet.POOLCARDS, poolCards);
                 }
 
                 if (castJson.containsKey(KeySet.HISTORY)) {
+                    List<List<Integer>> history = new ArrayList<>();
                     history = (List<List<Integer>>) castJson.get(KeySet.HISTORY);
                     req.put(KeySet.HISTORY, history);
                 }
 
                 if (castJson.containsKey(KeySet.LORDNO)) {
-                    lordNo = castJson.getInteger(KeySet.LORDNO);
+                   int lordNo = castJson.getInteger(KeySet.LORDNO);
                     req.put(KeySet.LORDNO, lordNo);
                 }
                 if (castJson.containsKey(KeySet.SCORES)) {
+                    List<Integer> scores = new ArrayList<>();
                     scores = (List<Integer>) castJson.get(KeySet.SCORES);
                     req.put(KeySet.SCORES, scores);
                 }
                 if (castJson.containsKey(KeySet.ASLORDS)) {
+                    List<Integer> asLords = new ArrayList<>();
                     asLords = (List<Integer>) castJson.get(KeySet.ASLORDS);
                     req.put(KeySet.ASLORDS, asLords);
                 }
                 if (castJson.containsKey(KeySet.DOUBLES)) {
+                    List<Integer> doubles = new ArrayList<>();
                     doubles = (List<Integer>) castJson.get(KeySet.DOUBLES);
                     req.put(KeySet.DOUBLES, doubles);
                 }
                 if (castJson.containsKey(KeySet.FIRSTCALLER)) {
-                    firstCaller = castJson.getString(KeySet.FIRSTCALLER);
+                   String firstCaller = castJson.getString(KeySet.FIRSTCALLER);
                     req.put(KeySet.FIRSTCALLER, firstCaller);
+                }
+
+                if (castJson.containsKey(KeySet.BOMBMULTIPLE)) {
+                    req.put(KeySet.BOMBMULTIPLE, castJson.getString(KeySet.BOMBMULTIPLE));
+                }
+                if (castJson.containsKey(KeySet.BETTERSEAT)) {
+                    req.put(KeySet.BETTERSEAT,castJson.getString(KeySet.BETTERSEAT));
+                }
+                if (castJson.containsKey(KeySet.BASEGOOD)) {
+                    req.put(KeySet.BASEGOOD, castJson.getString(KeySet.BASEGOOD));
+                }
+                if (castJson.containsKey(KeySet.CALLLORDFIRST)) {
+                    req.put(KeySet.CALLLORDFIRST,castJson.getString(KeySet.CALLLORDFIRST));
+                }
+                if (castJson.containsKey(KeySet.CARDTIDINESS)) {
+                    req.put(KeySet.CARDTIDINESS,castJson.getString(KeySet.CARDTIDINESS));
+                }
+                if (castJson.containsKey(KeySet.PLAYERBOMB)) {
+                    req.put(KeySet.PLAYERBOMB, castJson.getString(KeySet.PLAYERBOMB));
                 }
 
                 String resString = HttpClientHandlerForAI.getInstance().sendRequest(playUrl, JSONObject.toJSONString(req));
                 JSONObject resJson = JSONObject.parseObject(resString);
-
-                if ("playCard".equals(urlName)) {
+                if ("fapai".equals(urlName)) {
+                    if (resJson.getInteger("result") != 1) {
+                        resultMap.put("case_id", caseId);
+                        resultMap.put("code", resJson.getInteger("result"));
+                        resultMap.put("msg", "请求接口错误:" + resJson.getString("message"));
+                    } else {
+                        resultMap.put("case_id", caseId);
+                        resultMap.put("code", "1");
+                    }
+                } else if ("playCard".equals(urlName)) {
                     if (resJson.getInteger(KeySet.RESPONSECODE) != 1) {
                         resultMap.put("case_id", caseId);
                         resultMap.put("code", resJson.getInteger(KeySet.RESPONSECODE));
@@ -249,8 +289,10 @@ public class DdzGameTestServiceImpl implements DdzTestService {
                 e.printStackTrace();
             }
 //            System.out.println(JSONObject.toJSONString(resultMap));
+            returnList.add(JSONObject.toJSONString(resultMap));
             ddzTestMapper.insertResponseLog(resultMap);
         }
+        return returnList;
     }
 
     //转换明文

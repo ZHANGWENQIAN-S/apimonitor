@@ -2,6 +2,8 @@ package com.wzy.bp.service;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public interface DdzTestService {
@@ -22,4 +24,6 @@ public interface DdzTestService {
      * 测试数据库中所有的牌例
      */
     public void testAll();
+
+    public List testByLevelhaveReturn(String level);
 }
