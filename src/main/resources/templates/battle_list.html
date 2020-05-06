@@ -1,0 +1,142 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<script>
+function startVs(me,guid,enable){
+    var iLabel = "";
+    var title = "";
+    if(enable){
+    	iLabel += '<i class="fa fa-play"></i>';
+    	title = "启动";
+    }else{
+    	iLabel += '<i class="fa fa-pause"></i>';
+    	title = "暂停";
+    }
+	
+    $.ajax({
+        url : "/startVs" ,
+        type : 'GET',
+        data : {"guid":guid,"enable":enable},
+        success : function(data) {
+        	if(data){
+            	alert("执行成功！");
+        		$(me).empty();
+        		$(me).append(iLabel);
+        		$(me).attr("onclick","enableBattle(this,'"+guid+"',"+ (!enable) +")");
+        		$(me).attr("title",title);
+        	}else{
+            	alert("执行失败！");
+        	}
+        }
+	}); 
+}
+
+function deleteBattle(me,guid){
+	$.ajax({
+        url : "/deleteBattle" , //获取数据列
+        type : 'GET',
+        data : {"guid":guid},
+        success : function(data) {
+        	if(data){
+            	alert("删除成功！");
+            	$(me).parent().parent().remove();
+        	}else{
+            	alert("删除失败！");
+        	}
+        }
+	}); 
+}
+  $(function () {
+    $('#example1').DataTable({
+      'paging'      : true,
+      'lengthChange': true,
+      'searching'   : true,
+      'ordering'    : true,
+      'info'        : true,
+      'autoWidth'   : true
+    })
+  })
+</script>
+</head>
+<body>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        AI对战
+        <small>主页</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="/"><i class="fa fa-dashboard"></i> 主页</a></li>
+        <li><a href="/monitorList">AI对战列表</a></li>
+        <li class="active">AI对战列表</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+	  <div class="row">
+        <div class="col-xs-12">  
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">对战列表</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive">
+              <div class="btn-group" style="margin-bottom:10px;">
+                  <a href="/addVsGame" class="btn btn-default">新增AI对战</a>
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                    <span class="sr-only">Toggle Dropdown</span>
+                  </button>
+              </div>
+              <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                  <th>对战分组</th>
+                  <th>对战类型</th>
+                  <th>状态</th>
+                  <th>对战频率</th>
+                  <th>可用率</th>
+                  <th>平均响应时间</th>
+				  <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="item:${aiVsList}">
+                    <td th:text="${item.group}"></td>
+                    <td><a th:href="'/showVsHis?guid='+${item.guid}+'&amp;name='+${item.name}" th:text="${item.name}"></a></td>
+                    <td><i th:class="'fa fa-circle '+${item.textColor}" th:text="${item.status}"></i></td>
+                    <td th:text="${item.frequency}"></td>
+                    <td th:text="${item.usability}"></td>
+                    <td th:text="${item.avgCostTime}+' 毫秒'"></td>
+                    <td th:text="${item.responseTime}+' 毫秒'"></td>
+				    <td>
+					    <a href="javascript:void(0)" th:onclick="startVs(this,[[${item.guid}]],[[${item.enable}]])" style="padding:0px 6px;" data-toggle="tooltip" th:title="${item.enable==true}? '暂停' : '启动'">
+					    <i th:class="${item.enable==true}? 'fa fa-pause' : 'fa fa-play'"></i>
+					    </a>
+					    <a data-toggle="tooltip" style="padding:0px 6px;"
+                           th:href="'/editVsGame?guid='+${item.guid}" title="配置"><i class="fa fa-gear"></i></a>
+					    <a  href="javascript:void(0)" th:onclick="deleteMonitor(this,[[${item.guid}]])"  style="padding:0px 6px;" data-toggle="tooltip" title="删除"><i class="fa fa-trash"></i></a>
+				    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                </tfoot>
+              </table>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+		
+		</div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+</body>
+</html>
