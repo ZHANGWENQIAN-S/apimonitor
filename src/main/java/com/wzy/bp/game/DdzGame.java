@@ -2,14 +2,15 @@ package com.wzy.bp.game;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.util.TypeUtils;
 import com.wzy.bp.http.client.HttpClientHandlerForAI;
 import com.wzy.bp.model.VsGameRequestHistory;
-import com.wzy.bp.util.JsonUtils;
 import com.wzy.bp.util.ResponseEnum;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 public class DdzGame {
@@ -62,9 +63,9 @@ public class DdzGame {
         req.put(KeySet.INITCARDURL, "");
         List<List<Integer>> initCard = new ArrayList<>();
         initCard = DdzGame.getInstance().handsNew();
-        String card1 = "0,13,3,28,39,27,44,30,33,47,32,31,40,8,43,34,9";
-        String card2 = "46,26,36,5,29,52,37,6,35,51,14,50,42,17,10,16,25";
-        String card3 = "21,15,20,11,7,49,18,41,22,23,24,12,48,2,4,53,38";
+        String card1 = "16,29,4,17,30,5,12,25,11,24,7,20,6,19,32,13,26";
+        String card2 = "18,31,44,14,27,38,37,10,23,36,9,8,45,2,15,52,53";
+        String card3 = "21,34,47,22,35,48,49,28,39,40,41,42,43,33,46,51,50";
 
         List<Integer> card1List = new ArrayList<>();
         List<Integer> card2List = new ArrayList<>();
@@ -82,21 +83,25 @@ public class DdzGame {
         initCard.add(card3List);
         req.put(KeySet.INITCARD, initCard);
         List<Integer> poolCards = new ArrayList<>();
+        poolCards.add(3);
+        poolCards.add(0);
         poolCards.add(1);
-        poolCards.add(19);
-        poolCards.add(45);
         JSONObject robotInfo1 = new JSONObject();
         JSONObject robotInfo2 = new JSONObject();
         JSONObject robotInfo3 = new JSONObject();
-        robotInfo1.put(KeySet.CALLURL, "http://localhost:38001/ddz/bemaster");
-        robotInfo1.put(KeySet.DOUBLEURL, "http://localhost:38001/ddz/doubleScore");
-        robotInfo1.put(KeySet.PLAYURL, "http://localhost:38001/ddz/playcard");
-        robotInfo2.put(KeySet.CALLURL, "http://localhost:38001/ddz/bemaster");
-        robotInfo2.put(KeySet.DOUBLEURL, "http://localhost:38001/ddz/doubleScore");
-        robotInfo2.put(KeySet.PLAYURL, "http://localhost:38001/ddz/playcard");
-        robotInfo3.put(KeySet.CALLURL, "http://localhost:38001/ddz/bemaster");
-        robotInfo3.put(KeySet.DOUBLEURL, "http://localhost:38001/ddz/doubleScore");
-        robotInfo3.put(KeySet.PLAYURL, "http://localhost:38001/ddz/playcard");
+        robotInfo1.put(KeySet.CALLURL, "http://120.53.1.58:29031/ddzAI/ddz/bemaster?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo1.put(KeySet.DOUBLEURL, "http://120.53.1.58:29031/ddzAI/ddz/doubleScore?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo1.put(KeySet.PLAYURL, "http://120.53.1.58:29031/ddzAI/ddz/playcard?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo1.put(KeySet.RECALL, "http://120.53.1.58:29031/ddzAI/ddz/remaster?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo2.put(KeySet.CALLURL, "http://120.53.1.58:29031/ddzAI/ddz/bemaster?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo2.put(KeySet.DOUBLEURL, "http://120.53.1.58:29031/ddzAI/ddz/doubleScore?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo2.put(KeySet.PLAYURL, "http://120.53.1.58:29031/ddzAI/ddz/playcard?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo2.put(KeySet.RECALL,  "http://120.53.1.58:29031/ddzAI/ddz/remaster?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo3.put(KeySet.CALLURL, "http://120.53.1.58:29031/ddzAI/ddz/bemaster?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo3.put(KeySet.DOUBLEURL, "http://120.53.1.58:29031/ddzAI/ddz/doubleScore?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo3.put(KeySet.PLAYURL, "http://120.53.1.58:29031/ddzAI/ddz/playcard?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+        robotInfo3.put(KeySet.RECALL, "http://120.53.1.58:29031/ddzAI/ddz/remaster?access_token=91caf550-47cd-4604-9451-94fa1ae5c28a");
+
         List<JSONObject> robotInfo = new ArrayList<>();
         robotInfo.add(robotInfo1);
         robotInfo.add(robotInfo2);
@@ -110,15 +115,8 @@ public class DdzGame {
     }
 
     public String doAction(JSONObject AIInfo) {
-        Map result = new HashMap();
-        JsonUtils jsonUtils = new JsonUtils();//转换为jackjson工具类
-        Map<String, Object> AIInfoMap =new HashMap<>();//用于将AIInfo转换为Map
-        Iterator it =AIInfo.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Object> entry = (Map.Entry<String, Object>) it.next();
-            AIInfoMap.put(entry.getKey(), entry.getValue());
-        }
-        String type =jsonUtils.toJSONString( AIInfoMap.get(KeySet.GAMETYPE));
+        JSONObject result = new JSONObject();
+        String type = AIInfo.getString(KeySet.GAMETYPE);
         int initPosition = 0;
         int lordNo = 0;
         List<List<Integer>> history = new ArrayList<>();//历史出牌信息
@@ -127,31 +125,31 @@ public class DdzGame {
         boolean doubleScore = false;
         String initCard = "";
         JSONArray hisInfo = new JSONArray();
-        if (AIInfoMap.containsKey(KeySet.INITPOSITION)) {
-            initPosition = Integer.valueOf(AIInfoMap.get(KeySet.INITPOSITION).toString());
+        if (AIInfo.containsKey(KeySet.INITPOSITION)) {
+            initPosition = AIInfo.getInteger(KeySet.INITPOSITION);
         }
-        if (AIInfoMap.containsKey(KeySet.LEVEL)) {
-            level = Integer.valueOf(AIInfoMap.get(KeySet.LEVEL).toString());
+        if (AIInfo.containsKey(KeySet.LEVEL)) {
+            level = AIInfo.getInteger(KeySet.LEVEL);
         }
-        if (AIInfoMap.containsKey(KeySet.TIME)) {
-            time = Integer.valueOf(AIInfoMap.get(KeySet.TIME).toString());
+        if (AIInfo.containsKey(KeySet.TIME)) {
+            time = AIInfo.getInteger(KeySet.TIME);
         }
-        if (AIInfoMap.containsKey(KeySet.INITCARD)) {
-            initCard =jsonUtils.toJSONString(AIInfoMap.get(KeySet.INITCARD));
+        if (AIInfo.containsKey(KeySet.INITCARD)) {
+            initCard = AIInfo.getString(KeySet.INITCARD);
         }
         String initCardUrl = "";
-        if (AIInfoMap.containsKey(KeySet.INITCARDURL) && StringUtils.isNotEmpty(jsonUtils.toJSONString(AIInfoMap.get(KeySet.INITCARDURL)))) {
-            initCardUrl =jsonUtils.toJSONString(AIInfoMap.get(KeySet.INITCARDURL));
+        if (AIInfo.containsKey(KeySet.INITCARDURL) && StringUtils.isNotEmpty(AIInfo.getString(KeySet.INITCARDURL))) {
+            initCardUrl = AIInfo.getString(KeySet.INITCARDURL);
         } else {
             result.put("code", ResponseEnum.RESPONSE_ERROR_403.getCode());
             result.put("msg", ResponseEnum.RESPONSE_ERROR_403.getMsg());
             result.put("error", "无发牌地址");
-            return jsonUtils.toJSONString(result);
+            return JSONObject.toJSONString(result);
         }
         String gameId = UUID.randomUUID().toString().replaceAll("-", "");
         List<List<Integer>> allHands = new ArrayList<>();//暂时无发牌逻辑
         List<Integer> poolCards = new ArrayList<>();
-        Map initCardMap = new HashMap();
+        JSONObject initCardJson = new JSONObject();
         if (StringUtils.isEmpty(initCard)) {
             if (StringUtils.equals(initCardUrl, "NOURL")) {
                 allHands = DdzGame.getInstance().handsNew();
@@ -159,22 +157,21 @@ public class DdzGame {
                 allHands.remove(3);
             } else {
                 String initCardRes = HttpClientHandlerForAI.getInstance().sendRequest(initCardUrl, "");
-               initCardMap =  jsonUtils.toMap(initCardRes);
-               Integer codeValue = Integer.valueOf(initCardMap.get("code").toString());
-                if (codeValue != 200) {
+                initCardJson = JSONObject.parseObject(initCardRes);
+                if (initCardJson.getInteger("code") != 200) {
                     result.put("code", ResponseEnum.RESPONSE_ERROR_403.getCode());
                     result.put("msg", ResponseEnum.RESPONSE_ERROR_403.getMsg());
                     result.put("error", "起手牌错误");
-                    return jsonUtils.toJSONString(result);
+                    return JSONObject.toJSONString(result);
                 }
-                allHands = (List<List<Integer>>) initCardMap.get(KeySet.INITCARD);
-                poolCards = (List<Integer>) initCardMap.get(KeySet.POOLCARDS);
+                allHands = (List<List<Integer>>) initCardJson.get(KeySet.INITCARD);
+                poolCards = (List<Integer>) initCardJson.get(KeySet.POOLCARDS);
             }
 
 
         } else {
-            allHands = (List<List<Integer>>) AIInfoMap.get(KeySet.INITCARD);
-            poolCards = (List<Integer>) AIInfoMap.get(KeySet.POOLCARDS);
+            allHands = (List<List<Integer>>) AIInfo.get(KeySet.INITCARD);
+            poolCards = (List<Integer>) AIInfo.get(KeySet.POOLCARDS);
 
         }
         result.put("start", allHands.toString());
@@ -187,30 +184,20 @@ public class DdzGame {
         //叫分或者叫地主
         List<JSONObject> robotList = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            Map req = new HashMap();
+            JSONObject req = new JSONObject();
             int seatNo = (i + initPosition) % 3;
             int levelTmp = 3;
-           JSONObject robot = AIInfo.getJSONArray(KeySet.ROBOTINFO).getJSONObject(seatNo);
-//           List robotInfoList = jsonUtils.toList(AIInfoMap.get(KeySet.ROBOTINFO));
-//          Map robot = jsonUtils.toMap( robotInfoList.get(seatNo));
-
-//            Map robot =jsonUtils.toMap(jsonUtils.toList(AIInfoMap.get(KeySet.ROBOTINFO)));
-
+            JSONObject robot = AIInfo.getJSONArray(KeySet.ROBOTINFO).getJSONObject(seatNo);
             if (robot.containsKey(KeySet.LEVEL)) {
                 levelTmp = robot.getInteger(KeySet.LEVEL);
-//                levelTmp = Integer.valueOf(robot.get(KeySet.LEVEL).toString()) ;
             }
             //long id
             List<Integer> hands = allHands.get(seatNo);
 
             boolean darkType = true;
 
-            if (AIInfoMap.containsKey(KeySet.DARKTYPE)) {
-//                darkType = AIInfo.getBoolean(KeySet.DARKTYPE);
-                Object value = AIInfoMap.get(KeySet.DARKTYPE);
-                darkType= TypeUtils.castToBoolean(value);
-
-
+            if (AIInfo.containsKey(KeySet.DARKTYPE)) {
+                darkType = AIInfo.getBoolean(KeySet.DARKTYPE);
             }
             if (darkType) {
                 List<List<Integer>> ah = new ArrayList<>();
@@ -224,14 +211,11 @@ public class DdzGame {
             req.put(KeySet.SEATNO, seatNo);
             robot.put("req", req);
             robotList.add(robot);
-            if (StringUtils.equals(jsonUtils.toJSONString(AIInfoMap.get(KeySet.GAMETYPE)), KeySet.SCORE)) {
+            if (StringUtils.equals(AIInfo.getString(KeySet.GAMETYPE), KeySet.SCORE)) {
                 req.put(KeySet.SCORES, scores);
-//                String url = robot.getString(KeySet.SCOREURL);
-                String url = jsonUtils.toJSONString(robot.get(KeySet.SCOREURL));
-//                String scoreRes = HttpClientHandlerForAI.getInstance().sendRequest(url, JSONObject.toJSONString(req));
-                String scoreRes = HttpClientHandlerForAI.getInstance().sendRequest(url, jsonUtils.toJSONString(req));
+                String url = robot.getString(KeySet.SCOREURL);
+                String scoreRes = HttpClientHandlerForAI.getInstance().sendRequest(url, JSONObject.toJSONString(req));
                 JSONObject scoreJson = JSONObject.parseObject(scoreRes);
-
                 addReqHis(hisInfo, url, scoreJson, gameId);
                 if (scoreJson.getInteger(KeySet.RESPONDECODE) == 1) {
                     if (scoreJson.containsKey(KeySet.RESULT)) {
@@ -244,25 +228,22 @@ public class DdzGame {
                         if (scores.size() == 3 && resultScore == 0) {
                             result.put("code", ResponseEnum.RESPONSE_NO_SCORE.getCode());
                             result.put("msg", ResponseEnum.RESPONSE_NO_SCORE.getMsg());
-                            return jsonUtils.toJSONString(result);
+                            return JSONObject.toJSONString(result);
                         }
                     } else {
                         result.put("code", ResponseEnum.RESPONSE_NO_SCORE.getCode());
                         result.put("msg", ResponseEnum.RESPONSE_NO_SCORE.getMsg());
-
-                        return jsonUtils.toJSONString(result);
+                        return JSONObject.toJSONString(result);
                     }
                 }
             } else {
                 req.put(KeySet.ASLORDS, asLords);
-                String url = jsonUtils.toJSONString(robot.get(KeySet.CALLURL));
+                String url = robot.getString(KeySet.CALLURL);
                 if (firstCaller != 3) {
-//                    url = robot.getString(KeySet.RECALL);
-                    url = jsonUtils.toJSONString(robot.get(KeySet.RECALL));
+                    url = robot.getString(KeySet.RECALL);
                     req.put(KeySet.FIRSTCALLER, firstCaller);
                 }
-//                String callRes = HttpClientHandlerForAI.getInstance().sendRequest(url, JSONObject.toJSONString(req));
-                String callRes = HttpClientHandlerForAI.getInstance().sendRequest(url, jsonUtils.toJSONString(req));
+                String callRes = HttpClientHandlerForAI.getInstance().sendRequest(url, JSONObject.toJSONString(req));
                 JSONObject callJson = JSONObject.parseObject(callRes);
                 addReqHis(hisInfo, url, callJson, gameId);
                 if (callJson.containsKey(KeySet.RESPONDECODE) && callJson.getInteger("responseCode") == 1) {
@@ -288,13 +269,12 @@ public class DdzGame {
                         if (asLords.size() == 3 && firstCaller == 3) {
                             result.put("code", ResponseEnum.RESPONSE_NO_CALL.getCode());
                             result.put("msg", ResponseEnum.RESPONSE_NO_CALL.getMsg());
-                            jsonUtils.toJSONString(result);
+                            return JSONObject.toJSONString(result);
                         }
-
                     } else {
                         result.put("code", ResponseEnum.RESPONSE_NO_CALL.getCode());
                         result.put("msg", ResponseEnum.RESPONSE_NO_CALL.getMsg());
-                        jsonUtils.toJSONString(result);
+                        return JSONObject.toJSONString(result);
                     }
                 }
             }
@@ -332,13 +312,11 @@ public class DdzGame {
                     e.printStackTrace();
                     result.put("code", ResponseEnum.RESPONSE_NO_DOUBLE.getCode());
                     result.put("msg", ResponseEnum.RESPONSE_NO_DOUBLE.getMsg());
-//                    return JSONObject.toJSONString(result);
-                    jsonUtils.toJSONString(result);
+                    return JSONObject.toJSONString(result);
                 } catch (ExecutionException e) {
                     result.put("code", ResponseEnum.RESPONSE_NO_DOUBLE.getCode());
                     result.put("msg", ResponseEnum.RESPONSE_NO_DOUBLE.getMsg());
-//                    return JSONObject.toJSONString(result);
-                    jsonUtils.toJSONString(result);
+                    return JSONObject.toJSONString(result);
                 }
             }
             if (end - start > 3000) {
@@ -360,14 +338,13 @@ public class DdzGame {
         }
         while (!gameFinish) {
             seatNo = seatNo % 3;
-            Map robotInfo = robotList.get(seatNo);
-            String playUrl =jsonUtils.toJSONString(robotInfo.get(KeySet.PLAYURL));
-            Map req = jsonUtils.toMap(robotInfo.get("req")) ;
+            JSONObject robotInfo = robotList.get(seatNo);
+            String playUrl = robotInfo.getString(KeySet.PLAYURL);
+            JSONObject req = robotInfo.getJSONObject("req");
             boolean darkType = true;
             List<Integer> hands = allHands.get(seatNo);
-            if (AIInfoMap.containsKey(KeySet.DARKTYPE)) {
-//                darkType = AIInfo.getBoolean(KeySet.DARKTYPE);
-                darkType = TypeUtils.castToBoolean(AIInfoMap.get(KeySet.DARKTYPE));
+            if (AIInfo.containsKey(KeySet.DARKTYPE)) {
+                darkType = AIInfo.getBoolean(KeySet.DARKTYPE);
             }
             if (darkType) {
                 List<List<Integer>> ah = new ArrayList<>();
@@ -384,7 +361,7 @@ public class DdzGame {
             req.put("lordNo", lordNo);
             req.put(KeySet.HISTORY, history);
             System.out.println(req);
-            String playRes = HttpClientHandlerForAI.getInstance().sendRequest(playUrl, jsonUtils.toJSONString(req));
+            String playRes = HttpClientHandlerForAI.getInstance().sendRequest(playUrl, JSONObject.toJSONString(req));
 //            if(allHands.get(0).size()==0||allHands.get(2).size()==0||allHands.get(1).size()==0){
 //                gameFinish = true;
 //            }
@@ -394,8 +371,7 @@ public class DdzGame {
             if (playResJson.getInteger(KeySet.RESPONDECODE) != 1) {
                 result.put("code", 212);
                 result.put("msg", "请求打牌接口错误");
-//                return JSONObject.toJSONString(result);
-                return jsonUtils.toJSONString(result);
+                return JSONObject.toJSONString(result);
             }
             System.out.println(playResJson);
             List<Integer> card = (List<Integer>) playResJson.get(KeySet.CARDS);
@@ -424,13 +400,13 @@ public class DdzGame {
             seatNo++;
         }
         result.put("history", history);
-        Map<String,Object> env = new HashMap();
+        JSONObject env = new JSONObject();
         result.put("env", env);
         int point = 0;
         result.put("point", point);
         result.put("code", 200);
         result.put(KeySet.DOUBLE, doubleRec);
-        return jsonUtils.toJSONString(result);
+        return JSONObject.toJSONString(result);
     }
 
     private void addReqHis(JSONArray his, String url, JSONObject resJson, String gameId) {

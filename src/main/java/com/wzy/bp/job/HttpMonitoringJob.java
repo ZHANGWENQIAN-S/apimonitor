@@ -32,7 +32,7 @@ public class HttpMonitoringJob implements Job {
 
 
         final String guid = context.getMergedJobDataMap().getString(APPLICATION_INSTANCE_GUID);
-        if(StringUtils.startsWith(key.getName(),"game")){
+        if(StringUtils.startsWith(key.getName(),"gameJunit")){
             gameService.excuteVs(guid);
         }
         instanceService.executeRequest(guid);

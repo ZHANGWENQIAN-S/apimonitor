@@ -19,7 +19,7 @@ public class DynamicGameManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamicGameManager.class);
 
-    private static final String MONITORING_INSTANCE_JOB_NAME_PREFIX = "game-instance-";
+    private static final String MONITORING_INSTANCE_JOB_NAME_PREFIX = "gameJunit-instance-";
 
 
     public static String generateMonitoringInstanceJobName(String key) {

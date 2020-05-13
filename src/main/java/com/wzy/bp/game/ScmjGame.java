@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.wzy.bp.http.client.HttpClientHandlerForAI;
-import com.wzy.bp.util.JsonUtils;
 import com.wzy.bp.util.MahjongUtils;
 import com.wzy.bp.util.ResponseEnum;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 /**
@@ -99,13 +101,10 @@ public class ScmjGame {
     }
 
     public String doAction(JSONObject AIInfo) {
-        Map result = new HashMap();
-        JsonUtils jsonUtils = new JsonUtils();
+        JSONObject result = new JSONObject();
         List<List<Object>> history = new ArrayList<>();//历史信息
-        Map<String, Object> AIInfoMap =new HashMap<>();//用于将AIInfo转换为Map
-        Iterator it =AIInfo.entrySet().iterator();
         if (!checkAIInfo(AIInfo)) {
-            return jsonUtils.toJSONString(result);
+            return JSON.toJSONString(result);
         }
         String rule = AIInfo.getString(KeySet.RULE);
         int dealer = AIInfo.getInteger(KeySet.DEALER);
@@ -115,19 +114,17 @@ public class ScmjGame {
         String getCardUrl = AIInfo.getString("initCardUrl");
         List<List<String>> hands = new ArrayList<>();
         //获取手牌
-        Map<String,Object> getCardReq = new HashMap();
+        JSONObject getCardReq = new JSONObject();
         getCardReq.put(KeySet.DEALER, dealer);
         getCardReq.put(KeySet.GAMEID, gameId);
         getCardReq.put(KeySet.EXCHANGETYPE, exchangeType);
         getCardReq.put(KeySet.GRADE, getCardGrade);
-        String getCardRes = HttpClientHandlerForAI.getInstance().sendRequest(getCardUrl, jsonUtils.toJSONString(getCardReq));
+        String getCardRes = HttpClientHandlerForAI.getInstance().sendRequest(getCardUrl, JSONObject.toJSONString(getCardReq));
         //解析起手牌返回JSON
         JSONObject getCardJson = JSON.parseObject(getCardRes);
-//        Map getCardJson = jsonUtils.toMap(getCardRes,Map.class);
         List<String> tiles = new ArrayList<>();
         if (getCardJson.getInteger(KeySet.CODE) == 0 && getCardJson.containsKey(KeySet.TILES)) {
-//        if (Integer.valueOf(getCardJson.get(KeySet.CODE).toString()) == 0 && getCardJson.containsKey(KeySet.TILES)) {
-//            tiles = (List<String>) getCardJson.get(KeySet.TILES);
+            tiles = (List<String>) getCardJson.get(KeySet.TILES);
             for (int i = 0; i < 4; i++) {
                 List<String> hand = new ArrayList<>();
                 if (i == dealer) {
@@ -189,20 +186,20 @@ public class ScmjGame {
             List<Integer> nextPosMove = new ArrayList<>();
             List<String> hand = hands.get(curPos);
             List<String> action = new ArrayList<>();
-            Map<String,Object> robot = robotList.getJSONObject(curPos);
+            JSONObject robot = robotList.getJSONObject(curPos);
             if(robot.containsKey(KeySet.HUPAI))
-            robot.put(KeySet.HISTORY, history);
-            System.out.println(jsonUtils.toJSONString(robotList));
+                robot.put(KeySet.HISTORY, history);
+            System.out.println(JSONObject.toJSONString(robotList));
             robot.put(KeySet.CURPOS, curPos);
             robot.put(KeySet.LEGALACT, legalAct);
             robot.put(KeySet.USERINFO, AIInfo.get(KeySet.USERINFO));
             robot.put(KeySet.RULE, AIInfo.get(KeySet.RULE));
-            System.out.println(jsonUtils.toJSONString(robot));
-            System.out.println(jsonUtils.toJSONString(robot));
-            String playUrl = jsonUtils.toJSONString(robot.get(KeySet.GAMELOGIC));
-            String playRes = HttpClientHandlerForAI.getInstance().sendRequest(playUrl, jsonUtils.toJSONString(robot));
-            Map<String,Object> playJson = jsonUtils.toMap(playRes);
-            if (playJson.containsKey(KeySet.CODE) && Integer.valueOf(playJson.get(KeySet.CODE).toString()) == 0) {
+            System.out.println(JSONObject.toJSONString(robot));
+            System.out.println(JSONObject.toJSONString(robot));
+            String playUrl = robot.getString(KeySet.GAMELOGIC);
+            String playRes = HttpClientHandlerForAI.getInstance().sendRequest(playUrl, JSONObject.toJSONString(robot));
+            JSONObject playJson = JSON.parseObject(playRes);
+            if (playJson.containsKey(KeySet.CODE) && playJson.getInteger(KeySet.CODE) == 0) {
                 action = (List<String>) playJson.get(KeySet.ACTION);
                 int actionType = Integer.valueOf(action.get(0));
                 if (actionType != 4) {
@@ -258,7 +255,7 @@ public class ScmjGame {
             } else {
                 result.put(KeySet.CODE, ResponseEnum.RESPONSE_ERROR_403.getCode());
                 result.put(KeySet.MSG, "请求gamelogic接口错误");
-                return jsonUtils.toJSONString(result);
+                return JSON.toJSONString(result);
             }
             String nextCard = AIInfo.getString(KeySet.NEXTCARD);
             if (nextPosMove.size() > 0) {
@@ -292,28 +289,28 @@ public class ScmjGame {
                 }
 
             }
-            System.out.println(jsonUtils.toJSONString(robotList));
+            System.out.println(JSONObject.toJSONString(robotList));
 
             robot.put(KeySet.CURPOS, nextPos);
             robot.put(KeySet.WALL, walls);
-            System.out.println(jsonUtils.toJSONString(robotList));
+            System.out.println(JSONObject.toJSONString(robotList));
 
-            String newCardRes = HttpClientHandlerForAI.getInstance().sendRequest(nextCard, jsonUtils.toJSONString(robot));
-            Map newCardJson = jsonUtils.toMap(newCardRes);
-                if (Integer.valueOf(newCardJson.get(KeySet.CODE).toString()) == 0) {
-                    String tile = jsonUtils.toJSONString(newCardJson.get("tile"));
-                    addHistory(history, nextPos, 1, tile);
-                    int tilePos = walls.indexOf(tile);
-                    walls = walls.replaceFirst(tile, "");
-                    MahjongUtils.changeHandTiles(hands.get(nextPos), 1, tile);
+            String newCardRes = HttpClientHandlerForAI.getInstance().sendRequest(nextCard, JSONObject.toJSONString(robot));
+            JSONObject newCardJSON = JSON.parseObject(newCardRes);
+            if (newCardJSON.getInteger(KeySet.CODE) == 0) {
+                String tile = newCardJSON.getString("tile");
+                addHistory(history, nextPos, 1, tile);
+                int tilePos = walls.indexOf(tile);
+                walls = walls.replaceFirst(tile, "");
+                MahjongUtils.changeHandTiles(hands.get(nextPos), 1, tile);
+
             }
 
         }
 
-        return jsonUtils.toJSONString(history);
+        return JSONObject.toJSONString(history);
 
     }
-
 
     /**
      * 轮询其他位置是否吃碰杠和

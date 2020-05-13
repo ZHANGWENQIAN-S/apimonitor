@@ -1,4 +1,4 @@
-package com.wzy.game;
+package com.wzy.gameJunit;
 
 import com.wzy.bp.MainApplication;
 import com.wzy.bp.service.ScmjTestService;

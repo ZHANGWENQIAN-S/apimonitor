@@ -1,4 +1,4 @@
-package com.wzy.game;
+package com.wzy.gameJunit;
 
 import com.wzy.bp.MainApplication;
 import com.wzy.bp.service.DdzTestService;
@@ -10,27 +10,35 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.PostConstruct;
 
+
 @SpringBootTest(classes = MainApplication.class)
 @RunWith(SpringRunner.class)
-public class SmokeTest {
+public class DdzGameTest {
     @Autowired
     private DdzTestService ddzTestService;
 
-    public static SmokeTest smokeTest;
+    public static DdzGameTest ddzGameTest;
 
     @PostConstruct
     public void init() {
-        smokeTest = this;
-        smokeTest.ddzTestService = this.ddzTestService;
+        ddzGameTest = this;
+        ddzGameTest.ddzTestService = this.ddzTestService;
     }
 
     @Test
-    public void testDoAction(){
-        String gameType = "initCard";
+    public void test() {
+//        String level = "2";
+//        List<String> returnList = ddzTestService.testByLevelRetrun(level);
+//        for (String msg : returnList){
+//            System.out.println(msg);
+//        }
+        String gameType = "double";
         ddzTestService.testByGameType(gameType);
-
+//        ddzTestService.testAll();
+//        for (String msg : returnList) {
+//            System.out.println(msg);
+//        }
     }
-
 
 
 }

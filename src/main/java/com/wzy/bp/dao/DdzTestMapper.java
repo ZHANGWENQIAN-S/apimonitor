@@ -28,7 +28,7 @@ public interface DdzTestMapper {
      * @param gameType
      * @return
      */
-    @Select("SELECT * FROM game_case g  left join game_request r on g.game_request_id = r.id WHERE r.`urlName` = #{gameType} or r.`game` = #{gameType}")
+    @Select("SELECT * FROM game_case g  left join game_request r on g.game_request_id = r.id WHERE r.`urlName` = #{gameType} or r.`gameJunit` = #{gameType}")
     public List<JSONObject> selectReqListByGameType(@Param("gameType") String gameType);
 
 
@@ -50,5 +50,9 @@ public interface DdzTestMapper {
     @Insert("INSERT INTO game_response_log(`game_case_id`, `response_code`, `trueResult`, `time`) " +
             "VALUES(#{resultMap.case_id},#{resultMap.code},#{resultMap.trueResult},SYSDATE())")
     public void insertResponseLog(@Param("resultMap") Map resultMap);
+
+
+// @Select("SELECT * FROM game_case g  left join game_request r on g.game_request_id = r.id")
+// public List<JSONObject> selectResponseLog();
 
 }
